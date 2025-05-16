@@ -3,18 +3,14 @@ package com.dadn.be.ifarm.repository
 import com.dadn.be.ifarm.api.AdafruitResponse
 import com.dadn.be.ifarm.dto.request.ChangePumpStateRequest
 import com.dadn.be.ifarm.entity.WaterData
-import org.springframework.beans.factory.annotation.Value
+import io.github.cdimascio.dotenv.Dotenv
 import org.springframework.stereotype.Repository
 import org.springframework.web.reactive.function.client.WebClient
 import java.time.LocalDateTime
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 @Repository
 class WaterRepository {
-    @Value("\${api.secret.key}")
-    private lateinit var key : String
-
     private final val domain = "https://io.adafruit.com/api/v2/huynhat/feeds"
     private final val client = WebClient.create(domain)
 
@@ -67,8 +63,9 @@ class WaterRepository {
     }
 
     fun changePumpState(state : Int) : Boolean {
+        val dotenv = Dotenv.load()
         try {
-            client.post().uri("/v3/data").header("X-AIO-Key", key)
+            client.post().uri("/v3/data").header("X-AIO-Key", dotenv["X_AIO_KEY"]!!)
                 .bodyValue(ChangePumpStateRequest(value = state.toString()))
                 .retrieve()
                 .bodyToMono(AdafruitResponse::class.java)
